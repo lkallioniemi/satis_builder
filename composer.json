@@ -1,0 +1,51 @@
+{
+    "name": "frc/frantic-satis-repository",
+    "description": "Frantic Satis Repository",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Joonas Meriläinen",
+            "email": "joonas.merilainen@frantic.com"
+        }
+    ],
+    "require": {
+        "google/cloud-functions-framework": "^0.7",
+        "symfony/finder": "^4.3.5 || ^5.0.0",
+        "google/cloud-storage": "^1.23",
+        "symfony/console": "^4.3.5 || ^5.0.0",
+        "composer/satis": "dev-main",
+        "google/cloud-logging": "^1.21",
+        "aws/aws-sdk-php": "^3.188"
+    },
+    "autoload": {
+        "psr-4": {
+            "Frc\\Satis\\": "src"
+        }
+    },
+    "scripts": {
+        "build-json": "bin/satis-builder build --from=packages --external=packages/external.json --name=frc/frantic-satis-repository --homepage=https://s3-eu-west-1.amazonaws.com/satis-repository-bedrock --output=.satis.json",
+        "build-satis": "vendor/bin/satis build .satis.json dist",
+        "build": [
+            "@build-json",
+            "@build-satis",
+            "rm .satis.json"
+        ],
+        "sync": [
+            "aws s3 sync s3://satis-repository-bedrock/new/ dist/ --delete"
+        ],
+        "deploy": [
+            "aws s3 sync dist/ s3://satis-repository-bedrock/new --delete --acl=public-read"
+        ],
+        "requirements": [
+            "if ! [ -x \"$(command -v aws)\" ]; then echo \"Error: aws command not installed\"; exit 1; fi"
+        ],
+        "build-and-deploy": [
+            "git pull",
+            "@requirements",
+            "@composer install",
+            "@sync",
+            "@build",
+            "@deploy"
+        ]
+    }
+}

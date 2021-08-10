@@ -1,0 +1,9 @@
+## Temporary files
+*~
+*.log
+*.swp
+.DS_Store
+/.env
+dist
+.satis.json
+vendor
